@@ -43,9 +43,6 @@ class NumivasApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const MainScreen(),
-        // We will handle dynamic routes in onGenerateRoute if needed, 
-        // but for now let's just use a simple map and pass arguments.
-        '/unit': (context) => const ProductDetailView(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/unit') {
