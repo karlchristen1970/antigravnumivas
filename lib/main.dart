@@ -10,13 +10,41 @@ void main() {
   runApp(const NumivasApp());
 }
 
-class NumivasApp extends StatelessWidget {
+// Global key to access theme toggle from anywhere in the app
+final GlobalKey<_NumivasAppState> numivasAppKey = GlobalKey<_NumivasAppState>();
+
+class NumivasApp extends StatefulWidget {
   const NumivasApp({super.key});
+
+  @override
+  State<NumivasApp> createState() => _NumivasAppState();
+
+  /// Toggle between light, dark, and system theme modes
+  static void toggleTheme(BuildContext context) {
+    numivasAppKey.currentState?.toggleTheme();
+  }
+
+  /// Get the current theme mode
+  static ThemeMode getThemeMode(BuildContext context) {
+    return numivasAppKey.currentState?._themeMode ?? ThemeMode.dark;
+  }
+}
+
+class _NumivasAppState extends State<NumivasApp> {
+  ThemeMode _themeMode = ThemeMode.dark; // Default to dark for luxury feel
+
+  void toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      key: numivasAppKey,
       title: 'Numivas',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
         primaryColor: const Color(0xFFD4AF37), // Gold
@@ -39,7 +67,7 @@ class NumivasApp extends StatelessWidget {
         ),
         textTheme: GoogleFonts.latoTextTheme(ThemeData.dark().textTheme),
       ),
-      themeMode: ThemeMode.system,
+      themeMode: _themeMode,
       initialRoute: '/',
       routes: {
         '/': (context) => const MainScreen(),
@@ -76,10 +104,43 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _views,
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: _selectedIndex,
+            children: _views,
+          ),
+          // Dark mode toggle button - top right corner
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 12,
+            right: 16,
+            child: GestureDetector(
+              onTap: () => NumivasApp.toggleTheme(context),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withOpacity(0.15)
+                        : Colors.black.withOpacity(0.1),
+                  ),
+                ),
+                child: Icon(
+                  isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                  color: isDark ? const Color(0xFFD4AF37) : const Color(0xFF374151),
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
